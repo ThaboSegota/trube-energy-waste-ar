@@ -316,45 +316,8 @@
             <p>Explore how the human body manages energy production and waste removal through the respiratory and excretory systems in augmented reality.</p>
         </section>
 
-        <!-- 3D Model Viewer -->
-        <section class="ar-container">
-            <div class="ar-label">3D Interactive Model</div>
-            <div class="loading-overlay" id="loader">
-                <div class="spinner"></div>
-                <p class="loading-text">Loading 3D Model...</p>
-            </div>
-            <model-viewer
-                id="mainModel"
-                src="models/model.glb"
-                alt="Terrestrial Radiation Loss - Energy & Waste Management 3D Model"
-                ar
-                ar-modes="webxr scene-viewer quick-look"
-                camera-controls
-                touch-action="pan-y"
-                auto-rotate
-                autoplay
-                shadow-intensity="0.8"
-                environment-image="neutral"
-                exposure="1.0"
-                camera-orbit="30deg 75deg auto"
-                min-camera-orbit="auto auto auto"
-                max-camera-orbit="auto auto auto"
-                interaction-prompt="auto"
-                ar-scale="auto"
-                ar-placement="floor"
-            >
-            </model-viewer>
-        </section>
-
-        <!-- Controls -->
-        <div class="controls">
-            <button class="control-btn active" onclick="toggleAnimation('mainModel', true, this)">Play Animation</button>
-            <button class="control-btn" onclick="toggleAnimation('mainModel', false, this)">Pause</button>
-            <button class="control-btn" onclick="resetCamera('mainModel')">Reset View</button>
-        </div>
-
         <!-- ===== BEATING HEART 3D VIEWER ===== -->
-        <section class="ar-container" style="margin-top:30px;">
+        <section class="ar-container">
             <div class="ar-label" style="background:linear-gradient(135deg,#ff6b6b,#ee5a24);">Beating Heart</div>
             <div class="loading-overlay" id="heartLoader">
                 <div class="spinner" style="border-top-color:#ff6b6b;"></div>
@@ -505,14 +468,6 @@
     </footer>
 
     <script>
-        // Main model
-        const mainModel = document.getElementById('mainModel');
-        const loader = document.getElementById('loader');
-        mainModel.addEventListener('load', () => { loader.classList.add('hidden'); });
-        mainModel.addEventListener('error', () => {
-            loader.innerHTML = '<p style="color:#ff6b6b;font-size:14px;text-align:center;padding:20px;">Loading model...<br>Please wait or refresh.</p>';
-        });
-
         // Heart model
         const heartModel = document.getElementById('heartModel');
         const heartLoader = document.getElementById('heartLoader');
@@ -531,7 +486,7 @@
 
         function resetCamera(modelId) {
             const mv = document.getElementById(modelId);
-            mv.cameraOrbit = modelId === 'heartModel' ? '0deg 75deg auto' : '30deg 75deg auto';
+            mv.cameraOrbit = '0deg 75deg auto';
             mv.cameraTarget = 'auto auto auto';
         }
     </script>

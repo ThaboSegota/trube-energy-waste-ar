@@ -181,14 +181,14 @@
     <div id="scan-instructions">
         <h3>Scan the Trube Medical Card</h3>
         <img src="targets/marker.jpg" alt="marker" class="marker-thumb">
-        <p>Point your camera at the elephant card<br>to see the beating heart + energy model</p>
+        <p>Point your camera at the elephant card<br>to see the beating heart</p>
     </div>
 
     <!-- Info Panel -->
     <div id="info-panel">
         <div class="heartbeat-icon">&#10084;&#65039;</div>
         <div class="info-text">
-            <h4>Beating Heart + Energy Model</h4>
+            <h4>Beating Heart</h4>
             <p>Haptic vibration synced to heartbeat. Use +/- to resize.</p>
         </div>
     </div>
@@ -196,7 +196,7 @@
     <!-- Scale Controls -->
     <div id="scale-controls">
         <button class="scale-btn" onclick="scaleModel(0.05)">+</button>
-        <div id="scale-label">100%</div>
+        <div id="scale-label">30%</div>
         <button class="scale-btn" onclick="scaleModel(-0.05)">-</button>
     </div>
 
@@ -207,53 +207,40 @@
     <a-scene
         mindar-image="imageTargetSrc: targets/targets.mind; autoStart: true; uiLoading: no; uiError: no; uiScanning: no; filterMinCF: 0.001; filterBeta: 10; missTolerance: 5; warmupTolerance: 5;"
         color-space="sRGB"
-        renderer="colorManagement: true; physicallyCorrectLights: true;"
+        renderer="colorManagement: true;"
         vr-mode-ui="enabled: false"
         device-orientation-permission-ui="enabled: false"
     >
         <a-assets>
-            <a-asset-item id="energyModel" src="models/model.glb"></a-asset-item>
             <a-asset-item id="heartAsset" src="models/beating-heart.glb"></a-asset-item>
         </a-assets>
+
+        <!-- Lighting for proper textures -->
+        <a-light type="ambient" color="#BBB" intensity="0.6"></a-light>
+        <a-light type="directional" color="#FFF" intensity="0.8" position="1 2 1"></a-light>
+        <a-light type="directional" color="#FFF" intensity="0.4" position="-1 1 -1"></a-light>
 
         <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
         <!-- Image Target: Elephant Card -->
         <a-entity mindar-image-target="targetIndex: 0">
 
-            <!-- Container for scaling both models together -->
+            <!-- Container for scaling the heart model -->
             <a-entity id="model-container" position="0 0 0">
 
-                <!-- Beating Heart - small, sits nicely on the card -->
+                <!-- Beating Heart - centered on the card -->
                 <a-gltf-model
                     id="heart-ar"
                     src="#heartAsset"
                     position="0 0 0.05"
                     rotation="0 0 0"
-                    scale="0.02 0.02 0.02"
+                    scale="0.006 0.006 0.006"
                     animation-mixer="loop: repeat; timeScale: 1;"
                 ></a-gltf-model>
-
-                <!-- Energy/Radiation model - small, offset to the side -->
-                <a-gltf-model
-                    id="energy-ar"
-                    src="#energyModel"
-                    position="0.25 0 0.02"
-                    rotation="-90 0 0"
-                    scale="0.04 0.04 0.04"
-                    animation-mixer="loop: repeat; timeScale: 1;"
-                ></a-gltf-model>
-
-                <!-- Title label -->
-                <a-entity
-                    position="0 0 0.22"
-                    text="value: Energy & Waste Management; color: #00ffaa; align: center; width: 0.8; font: roboto;"
-                    look-at="[camera]"
-                ></a-entity>
 
                 <!-- Heart label -->
                 <a-entity
-                    position="0 0 0.17"
+                    position="0 0 0.15"
                     text="value: Beating Heart; color: #ff6666; align: center; width: 0.6; font: roboto;"
                     look-at="[camera]"
                 ></a-entity>
@@ -274,22 +261,17 @@
         const hapticIndicator = document.getElementById('haptic-indicator');
 
         // ========== Scale State ==========
-        let currentScale = 1.0;
-        const MIN_SCALE = 0.3;
+        let currentScale = 0.3;
+        const MIN_SCALE = 0.1;
         const MAX_SCALE = 3.0;
         const baseHeartScale = 0.02;
-        const baseEnergyScale = 0.04;
 
         function scaleModel(delta) {
             currentScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, currentScale + delta));
             const hs = baseHeartScale * currentScale;
-            const es = baseEnergyScale * currentScale;
 
             const heartEl = document.getElementById('heart-ar');
-            const energyEl = document.getElementById('energy-ar');
-
             if (heartEl) heartEl.setAttribute('scale', `${hs} ${hs} ${hs}`);
-            if (energyEl) energyEl.setAttribute('scale', `${es} ${es} ${es}`);
 
             scaleLabel.textContent = Math.round(currentScale * 100) + '%';
         }
