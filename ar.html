@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AR Scanner - Trube Medical</title>
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <!-- MindAR + A-Frame for Image Target AR -->
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+
+    <!-- Three.js GLTFLoader for animated models -->
+    <script src="https://cdn.jsdelivr.net/npm/aframe-extras@7.4.0/dist/aframe-extras.min.js"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { width: 100%; height: 100%; overflow: hidden; }
+
+        /* Status overlay */
+        #status-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 1000;
+            padding: 12px 16px;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        #status-text {
+            color: #fff;
+            font-family: -apple-system, sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        #status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #ff6b6b;
+            animation: blink 1.5s ease-in-out infinite;
+        }
+
+        #status-dot.tracking {
+            background: #00d4aa;
+            animation: none;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 12px;
+            left: 12px;
+            z-index: 1001;
+            width: 40px;
+            height: 40px;
+            background: rgba(0,0,0,0.6);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 50%;
+            color: #fff;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* Scanning instructions */
+        #scan-instructions {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            z-index: 1000;
+            padding: 20px;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+            text-align: center;
+            transition: opacity 0.5s ease;
+        }
+
+        #scan-instructions.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #scan-instructions h3 {
+            color: #fff;
+            font-family: -apple-system, sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        #scan-instructions p {
+            color: rgba(255,255,255,0.6);
+            font-family: -apple-system, sans-serif;
+            font-size: 13px;
+        }
+
+        .marker-thumb {
+            width: 120px;
+            height: 75px;
+            border-radius: 8px;
+            border: 2px solid #8b5cf6;
+            margin: 10px auto;
+            display: block;
+            object-fit: cover;
+        }
+
+        /* Scanning animation */
+        #scan-animation {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 999;
+            width: 200px;
+            height: 200px;
+            border: 2px solid rgba(139,92,246,0.5);
+            border-radius: 20px;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        #scan-animation.hidden { opacity: 0; }
+
+        #scan-animation::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #8b5cf6, transparent);
+            animation: scanLine 2s ease-in-out infinite;
+        }
+
+        @keyframes scanLine {
+            0% { top: 0; }
+            50% { top: calc(100% - 3px); }
+            100% { top: 0; }
+        }
+
+        /* Corner brackets */
+        #scan-animation::after {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border: 3px solid transparent;
+            border-top-color: #00d4aa;
+            border-left-color: #00d4aa;
+            border-radius: 20px 0 0 0;
+            width: 40px;
+            height: 40px;
+        }
+
+        /* Info panel when tracked */
+        #info-panel {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(15px);
+            border-radius: 16px;
+            border: 1px solid rgba(139,92,246,0.3);
+            padding: 16px;
+            display: none;
+        }
+
+        #info-panel.visible { display: block; }
+
+        #info-panel h4 {
+            color: #8b5cf6;
+            font-family: -apple-system, sans-serif;
+            font-size: 14px;
+            margin-bottom: 6px;
+        }
+
+        #info-panel p {
+            color: rgba(255,255,255,0.7);
+            font-family: -apple-system, sans-serif;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <!-- Back Button -->
+    <a href="index.html" class="back-btn" id="backBtn">&larr;</a>
+
+    <!-- Status Bar -->
+    <div id="status-overlay" style="padding-left:60px;">
+        <span id="status-text">Initializing camera...</span>
+        <span id="status-dot"></span>
+    </div>
+
+    <!-- Scanning Visual -->
+    <div id="scan-animation"></div>
+
+    <!-- Scanning Instructions -->
+    <div id="scan-instructions">
+        <h3>Scan the Trube Medical Card</h3>
+        <img src="targets/marker.jpg" alt="marker" class="marker-thumb">
+        <p>Point your camera at the elephant card to see the 3D model</p>
+    </div>
+
+    <!-- Info Panel (shown when tracked) -->
+    <div id="info-panel">
+        <h4>Energy & Waste Management</h4>
+        <p>Terrestrial Radiation Loss model showing how energy is radiated from Earth's surface. Animated blue arrows represent infrared radiation escaping to space.</p>
+    </div>
+
+    <!-- A-Frame AR Scene -->
+    <a-scene
+        mindar-image="imageTargetSrc: targets/targets.mind; autoStart: true; uiLoading: no; uiError: no; uiScanning: no; filterMinCF: 0.001; filterBeta: 10; missTolerance: 5; warmupTolerance: 5;"
+        color-space="sRGB"
+        renderer="colorManagement: true; physicallyCorrectLights: true;"
+        vr-mode-ui="enabled: false"
+        device-orientation-permission-ui="enabled: false"
+    >
+        <a-assets>
+            <a-asset-item id="model" src="models/model.glb"></a-asset-item>
+        </a-assets>
+
+        <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+        <!-- Image Target 0: Elephant Card -->
+        <a-entity mindar-image-target="targetIndex: 0">
+            <!-- 3D Model - positioned on top of the card -->
+            <a-gltf-model
+                src="#model"
+                position="0 0 0.1"
+                rotation="-90 0 0"
+                scale="0.3 0.3 0.3"
+                animation-mixer="loop: repeat; timeScale: 1;"
+                class="clickable"
+            ></a-gltf-model>
+
+            <!-- Label floating above the model -->
+            <a-entity
+                position="0 0.6 0"
+                text="value: Energy & Waste Management; color: #00d4aa; align: center; width: 1.5; font: roboto;"
+                look-at="[camera]"
+            ></a-entity>
+
+            <!-- Subtitle -->
+            <a-entity
+                position="0 0.5 0"
+                text="value: Terrestrial Radiation Loss; color: white; align: center; width: 1.2; font: roboto; opacity: 0.7;"
+                look-at="[camera]"
+            ></a-entity>
+        </a-entity>
+    </a-scene>
+
+    <script>
+        const statusText = document.getElementById('status-text');
+        const statusDot = document.getElementById('status-dot');
+        const scanInstructions = document.getElementById('scan-instructions');
+        const scanAnimation = document.getElementById('scan-animation');
+        const infoPanel = document.getElementById('info-panel');
+
+        // Listen for MindAR ready
+        const sceneEl = document.querySelector('a-scene');
+
+        sceneEl.addEventListener('arReady', () => {
+            statusText.textContent = 'Camera ready - Scan the elephant card';
+            console.log('MindAR ready');
+        });
+
+        sceneEl.addEventListener('arError', (e) => {
+            statusText.textContent = 'Camera error - Please allow camera access';
+            console.error('MindAR error:', e);
+        });
+
+        // Listen for target found/lost
+        const target = document.querySelector('[mindar-image-target]');
+
+        target.addEventListener('targetFound', () => {
+            statusText.textContent = 'Target FOUND - Tracking active!';
+            statusDot.classList.add('tracking');
+            scanInstructions.classList.add('hidden');
+            scanAnimation.classList.add('hidden');
+            infoPanel.classList.add('visible');
+            console.log('Target found!');
+        });
+
+        target.addEventListener('targetLost', () => {
+            statusText.textContent = 'Target lost - Point camera at the card';
+            statusDot.classList.remove('tracking');
+            scanInstructions.classList.remove('hidden');
+            scanAnimation.classList.remove('hidden');
+            infoPanel.classList.remove('visible');
+            console.log('Target lost');
+        });
+    </script>
+</body>
+</html>
