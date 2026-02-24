@@ -224,37 +224,37 @@
             <!-- Container for scaling both models together -->
             <a-entity id="model-container" position="0 0 0">
 
-                <!-- Beating Heart - half card size, centered above card -->
+                <!-- Beating Heart - small, sits nicely on the card -->
                 <a-gltf-model
                     id="heart-ar"
                     src="#heartAsset"
-                    position="0 0 0.15"
+                    position="0 0 0.05"
                     rotation="0 0 0"
-                    scale="0.15 0.15 0.15"
+                    scale="0.02 0.02 0.02"
                     animation-mixer="loop: repeat; timeScale: 1;"
                 ></a-gltf-model>
 
-                <!-- Energy/Radiation model - smaller, offset to the side -->
+                <!-- Energy/Radiation model - small, offset to the side -->
                 <a-gltf-model
                     id="energy-ar"
                     src="#energyModel"
-                    position="0.35 0 0.05"
+                    position="0.25 0 0.02"
                     rotation="-90 0 0"
-                    scale="0.12 0.12 0.12"
+                    scale="0.04 0.04 0.04"
                     animation-mixer="loop: repeat; timeScale: 1;"
                 ></a-gltf-model>
 
                 <!-- Title label -->
                 <a-entity
-                    position="0 0 0.45"
-                    text="value: Energy & Waste Management; color: #00ffaa; align: center; width: 1.2; font: roboto;"
+                    position="0 0 0.22"
+                    text="value: Energy & Waste Management; color: #00ffaa; align: center; width: 0.8; font: roboto;"
                     look-at="[camera]"
                 ></a-entity>
 
                 <!-- Heart label -->
                 <a-entity
-                    position="-0.05 0 0.35"
-                    text="value: Beating Heart; color: #ff6666; align: center; width: 0.8; font: roboto;"
+                    position="0 0 0.17"
+                    text="value: Beating Heart; color: #ff6666; align: center; width: 0.6; font: roboto;"
                     look-at="[camera]"
                 ></a-entity>
 
@@ -277,8 +277,8 @@
         let currentScale = 1.0;
         const MIN_SCALE = 0.3;
         const MAX_SCALE = 3.0;
-        const baseHeartScale = 0.15;
-        const baseEnergyScale = 0.12;
+        const baseHeartScale = 0.02;
+        const baseEnergyScale = 0.04;
 
         function scaleModel(delta) {
             currentScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, currentScale + delta));

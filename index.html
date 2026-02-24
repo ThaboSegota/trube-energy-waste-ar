@@ -370,13 +370,18 @@
                 touch-action="pan-y"
                 auto-rotate
                 autoplay
-                shadow-intensity="0.8"
+                shadow-intensity="1"
+                shadow-softness="0.5"
                 environment-image="neutral"
-                exposure="1.0"
-                camera-orbit="0deg 75deg auto"
+                exposure="1.2"
+                camera-orbit="20deg 70deg 105%"
+                min-camera-orbit="auto auto 50%"
+                max-camera-orbit="auto auto 300%"
+                field-of-view="30deg"
                 interaction-prompt="auto"
-                ar-scale="auto"
+                ar-scale="fixed"
                 ar-placement="floor"
+                style="background: radial-gradient(ellipse at center, #2a1020 0%, #0a0610 100%);"
             >
             </model-viewer>
         </section>
