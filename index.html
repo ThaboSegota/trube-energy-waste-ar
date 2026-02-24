@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Energy & Waste Management - Trube Medical AR</title>
+    <meta name="description" content="Interactive AR experience exploring Energy & Waste Management in the human body - Trube Medical">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <!-- Model Viewer for WebXR AR -->
+    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a1628 0%, #1a2d50 40%, #0d3b66 100%);
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding: 16px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #00d4aa, #0099ff);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .header h1 {
+            font-size: 18px;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .header .subtitle {
+            font-size: 12px;
+            color: #00d4aa;
+            font-weight: 500;
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 30px 0 20px;
+        }
+
+        .hero h2 {
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #00d4aa, #0099ff, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .hero p {
+            font-size: 14px;
+            color: rgba(255,255,255,0.7);
+            max-width: 500px;
+            margin: 0 auto;
+            line-height: 1.5;
+        }
+
+        /* AR Model Viewer */
+        .ar-container {
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            overflow: hidden;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .ar-label {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: linear-gradient(135deg, #00d4aa, #0099ff);
+            color: #fff;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            z-index: 10;
+        }
+
+        model-viewer {
+            width: 100%;
+            height: 400px;
+            background: radial-gradient(ellipse at center, #1a2d50 0%, #0a1628 100%);
+            --poster-color: transparent;
+        }
+
+        model-viewer::part(default-ar-button) {
+            bottom: 16px;
+            right: 16px;
+            background: linear-gradient(135deg, #00d4aa, #0099ff);
+            border-radius: 50px;
+            border: none;
+            padding: 12px 24px;
+            color: white;
+            font-weight: 700;
+            font-size: 14px;
+            box-shadow: 0 4px 20px rgba(0,212,170,0.4);
+        }
+
+        /* AR Button Custom */
+        .ar-btn {
+            display: block;
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #00d4aa, #0099ff);
+            color: #fff;
+            border: none;
+            border-radius: 16px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            margin: 16px 0;
+            text-align: center;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0,212,170,0.3);
+        }
+
+        .ar-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0,212,170,0.5);
+        }
+
+        .ar-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Info Cards */
+        .info-section {
+            margin: 30px 0;
+        }
+
+        .info-section h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #00d4aa;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        @media (min-width: 500px) {
+            .cards {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(0,212,170,0.3);
+            transform: translateY(-2px);
+        }
+
+        .card-icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .card h4 {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .card p {
+            font-size: 13px;
+            color: rgba(255,255,255,0.6);
+            line-height: 1.5;
+        }
+
+        /* Diagram Section */
+        .diagram-section {
+            margin: 30px 0;
+        }
+
+        .diagram-section h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #8b5cf6;
+        }
+
+        .diagram-scroll {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .diagram-scroll::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .diagram-scroll::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.2);
+            border-radius: 2px;
+        }
+
+        .diagram-card {
+            min-width: 260px;
+            max-width: 300px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            overflow: hidden;
+            scroll-snap-align: start;
+            flex-shrink: 0;
+        }
+
+        .diagram-card img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .diagram-card .caption {
+            padding: 12px 16px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        /* System Overview */
+        .system-overview {
+            margin: 30px 0;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 24px;
+        }
+
+        .system-overview h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #ff6b6b;
+        }
+
+        .process-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .step {
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+        }
+
+        .step-number {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #00d4aa, #0099ff);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .step-content h4 {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .step-content p {
+            font-size: 13px;
+            color: rgba(255,255,255,0.6);
+            line-height: 1.4;
+        }
+
+        /* Animation Controls */
+        .controls {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 16px 0;
+        }
+
+        .control-btn {
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .control-btn:hover {
+            background: rgba(0,212,170,0.2);
+            border-color: #00d4aa;
+        }
+
+        .control-btn.active {
+            background: linear-gradient(135deg, #00d4aa, #0099ff);
+            border-color: transparent;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 30px 20px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            margin-top: 40px;
+        }
+
+        .footer p {
+            font-size: 12px;
+            color: rgba(255,255,255,0.4);
+        }
+
+        .footer .brand {
+            color: #00d4aa;
+            font-weight: 700;
+        }
+
+        /* Loading State */
+        .loading-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(10,22,40,0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top-color: #00d4aa;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            margin-top: 12px;
+            font-size: 14px;
+            color: rgba(255,255,255,0.6);
+        }
+
+        /* Pulse animation for AR button */
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 4px 20px rgba(0,212,170,0.3); }
+            50% { box-shadow: 0 4px 40px rgba(0,212,170,0.6); }
+        }
+
+        .ar-btn {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        /* Responsive */
+        @media (min-width: 600px) {
+            model-viewer {
+                height: 500px;
+            }
+            .hero h2 {
+                font-size: 36px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">T</div>
+            <div>
+                <h1>Trube Medical</h1>
+                <span class="subtitle">Energy & Waste Management</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Hero -->
+        <section class="hero">
+            <h2>Energy & Waste Management</h2>
+            <p>Explore how the human body manages energy production and waste removal through the respiratory and excretory systems in augmented reality.</p>
+        </section>
+
+        <!-- 3D AR Model: Terrestrial Radiation -->
+        <section class="ar-container">
+            <div class="ar-label">3D AR Model</div>
+            <div class="loading-overlay" id="loader">
+                <div class="spinner"></div>
+                <p class="loading-text">Loading 3D Model...</p>
+            </div>
+            <model-viewer
+                id="mainModel"
+                src="models/terrestrial-radiation-optimized.glb"
+                alt="Terrestrial Radiation Loss - Energy & Waste Management 3D Model"
+                ar
+                ar-modes="webxr scene-viewer quick-look"
+                camera-controls
+                touch-action="pan-y"
+                auto-rotate
+                autoplay
+                shadow-intensity="1"
+                shadow-softness="0.5"
+                environment-image="neutral"
+                exposure="1.2"
+                camera-orbit="45deg 60deg 2.5m"
+                min-camera-orbit="auto auto 1m"
+                max-camera-orbit="auto auto 10m"
+                interaction-prompt="auto"
+                ar-scale="auto"
+                ar-placement="floor"
+                poster=""
+            >
+                <button slot="ar-button" class="ar-btn" style="position:absolute;bottom:16px;left:50%;transform:translateX(-50%);width:auto;padding:14px 28px;margin:0;animation:none;">
+                    View in AR
+                </button>
+            </model-viewer>
+        </section>
+
+        <!-- Animation Controls -->
+        <div class="controls">
+            <button class="control-btn active" onclick="toggleAnimation(true, this)">Play Animation</button>
+            <button class="control-btn" onclick="toggleAnimation(false, this)">Pause</button>
+            <button class="control-btn" onclick="resetCamera()">Reset View</button>
+            <button class="control-btn" onclick="toggleAutoRotate()">Auto-Rotate</button>
+        </div>
+
+        <!-- Energy Process Overview -->
+        <section class="system-overview">
+            <h3>How Energy & Waste Management Works</h3>
+            <div class="process-steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>Energy Intake</h4>
+                        <p>The body absorbs energy from food through the digestive system, breaking down nutrients into glucose and other molecules.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>Cellular Respiration</h4>
+                        <p>Cells use oxygen to convert glucose into ATP (energy), producing carbon dioxide and water as waste products.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>Gas Exchange</h4>
+                        <p>The respiratory system exchanges CO2 waste for fresh oxygen in the alveoli of the lungs through diffusion.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h4>Heat Radiation</h4>
+                        <p>Excess energy is released as heat through the skin via terrestrial radiation, maintaining body temperature homeostasis.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">5</div>
+                    <div class="step-content">
+                        <h4>Waste Excretion</h4>
+                        <p>The kidneys filter blood to remove metabolic waste (urea, creatinine), while the lungs expel CO2 and the skin releases toxins through sweat.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Info Cards -->
+        <section class="info-section">
+            <h3>Key Systems</h3>
+            <div class="cards">
+                <div class="card">
+                    <div class="card-icon">&#129729;</div>
+                    <h4>Respiratory System</h4>
+                    <p>Lungs facilitate gas exchange - oxygen in, carbon dioxide out. Alveoli provide a massive surface area for efficient diffusion.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">&#9888;&#65039;</div>
+                    <h4>Terrestrial Radiation</h4>
+                    <p>The body radiates heat energy as infrared radiation. This thermal regulation is essential for maintaining core body temperature.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">&#128167;</div>
+                    <h4>Excretory System</h4>
+                    <p>Kidneys filter waste products from blood. Urine carries dissolved metabolic waste including urea and excess minerals.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">&#9889;</div>
+                    <h4>ATP Production</h4>
+                    <p>Mitochondria convert glucose + oxygen into ATP energy through cellular respiration, powering all body functions.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Diagrams -->
+        <section class="diagram-section">
+            <h3>Educational Diagrams</h3>
+            <div class="diagram-scroll">
+                <div class="diagram-card">
+                    <img src="textures/lungs.jpg" alt="Lungs Cross Section" loading="lazy">
+                    <div class="caption">Lungs - Cross Section View</div>
+                </div>
+                <div class="diagram-card">
+                    <img src="textures/alveoli.jpg" alt="Alveoli Structure" loading="lazy">
+                    <div class="caption">Alveoli - Gas Exchange Site</div>
+                </div>
+                <div class="diagram-card">
+                    <img src="textures/bronchus.jpg" alt="Bronchus Structure" loading="lazy">
+                    <div class="caption">Bronchus - Airway Structure</div>
+                </div>
+                <div class="diagram-card">
+                    <img src="textures/diagram1.png" alt="Energy Process Diagram" loading="lazy">
+                    <div class="caption">Energy Management Diagram</div>
+                </div>
+                <div class="diagram-card">
+                    <img src="textures/diagram2.png" alt="Waste Management Diagram" loading="lazy">
+                    <div class="caption">Waste Management Overview</div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p><span class="brand">Trube Medical</span> &mdash; Interactive AR Learning</p>
+        <p style="margin-top:6px;">Point your phone camera at any flat surface to place the 3D model</p>
+    </footer>
+
+    <script>
+        // Model loading handler
+        const modelViewer = document.getElementById('mainModel');
+        const loader = document.getElementById('loader');
+
+        modelViewer.addEventListener('load', () => {
+            loader.classList.add('hidden');
+        });
+
+        modelViewer.addEventListener('error', () => {
+            loader.innerHTML = '<p style="color:#ff6b6b;font-size:14px;text-align:center;padding:20px;">Failed to load 3D model.<br>Please refresh the page.</p>';
+        });
+
+        // Animation controls
+        function toggleAnimation(play, btn) {
+            if (play) {
+                modelViewer.play();
+            } else {
+                modelViewer.pause();
+            }
+            document.querySelectorAll('.control-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        function resetCamera() {
+            modelViewer.cameraOrbit = '45deg 60deg 2.5m';
+            modelViewer.cameraTarget = 'auto auto auto';
+        }
+
+        let autoRotating = true;
+        function toggleAutoRotate() {
+            autoRotating = !autoRotating;
+            modelViewer.autoRotate = autoRotating;
+            event.target.textContent = autoRotating ? 'Auto-Rotate: On' : 'Auto-Rotate: Off';
+        }
+
+        // Detect AR support
+        if (modelViewer.canActivateAR) {
+            console.log('AR is supported on this device');
+        }
+    </script>
+</body>
+</html>
