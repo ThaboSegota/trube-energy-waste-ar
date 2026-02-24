@@ -7,23 +7,20 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
 
-    <!-- MindAR + A-Frame for Image Target AR -->
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-
-    <!-- Three.js GLTFLoader for animated models -->
     <script src="https://cdn.jsdelivr.net/npm/aframe-extras@7.4.0/dist/aframe-extras.min.js"></script>
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { width: 100%; height: 100%; overflow: hidden; }
 
-        /* Status overlay */
         #status-overlay {
             position: fixed;
             top: 0; left: 0; right: 0;
             z-index: 1000;
             padding: 12px 16px;
+            padding-left: 60px;
             background: rgba(0,0,0,0.7);
             backdrop-filter: blur(10px);
             display: flex;
@@ -39,184 +36,172 @@
         }
 
         #status-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
+            width: 10px; height: 10px; border-radius: 50%;
             background: #ff6b6b;
             animation: blink 1.5s ease-in-out infinite;
         }
 
-        #status-dot.tracking {
-            background: #00d4aa;
-            animation: none;
-        }
+        #status-dot.tracking { background: #00d4aa; animation: none; }
 
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
         .back-btn {
-            position: fixed;
-            top: 12px;
-            left: 12px;
-            z-index: 1001;
-            width: 40px;
-            height: 40px;
-            background: rgba(0,0,0,0.6);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 50%;
-            color: #fff;
-            font-size: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-            cursor: pointer;
+            position: fixed; top: 12px; left: 12px; z-index: 1001;
+            width: 40px; height: 40px;
+            background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 50%; color: #fff; font-size: 18px;
+            display: flex; align-items: center; justify-content: center;
+            text-decoration: none; cursor: pointer;
         }
 
-        /* Scanning instructions */
         #scan-instructions {
-            position: fixed;
-            bottom: 0; left: 0; right: 0;
-            z-index: 1000;
+            position: fixed; bottom: 0; left: 0; right: 0; z-index: 1000;
             padding: 20px;
             background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
             text-align: center;
             transition: opacity 0.5s ease;
         }
 
-        #scan-instructions.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
+        #scan-instructions.hidden { opacity: 0; pointer-events: none; }
 
         #scan-instructions h3 {
-            color: #fff;
-            font-family: -apple-system, sans-serif;
-            font-size: 16px;
-            font-weight: 700;
-            margin-bottom: 8px;
+            color: #fff; font-family: -apple-system, sans-serif;
+            font-size: 16px; font-weight: 700; margin-bottom: 8px;
         }
 
         #scan-instructions p {
             color: rgba(255,255,255,0.6);
-            font-family: -apple-system, sans-serif;
-            font-size: 13px;
+            font-family: -apple-system, sans-serif; font-size: 13px;
         }
 
         .marker-thumb {
-            width: 120px;
-            height: 75px;
-            border-radius: 8px;
-            border: 2px solid #8b5cf6;
-            margin: 10px auto;
-            display: block;
-            object-fit: cover;
+            width: 120px; height: 75px; border-radius: 8px;
+            border: 2px solid #8b5cf6; margin: 10px auto; display: block; object-fit: cover;
         }
 
-        /* Scanning animation */
         #scan-animation {
-            position: fixed;
-            top: 50%;
-            left: 50%;
+            position: fixed; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            z-index: 999;
-            width: 200px;
-            height: 200px;
+            z-index: 999; width: 200px; height: 200px;
             border: 2px solid rgba(139,92,246,0.5);
-            border-radius: 20px;
-            pointer-events: none;
+            border-radius: 20px; pointer-events: none;
             transition: opacity 0.5s ease;
         }
 
         #scan-animation.hidden { opacity: 0; }
 
         #scan-animation::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 3px;
+            content: ''; position: absolute;
+            top: 0; left: 0; right: 0; height: 3px;
             background: linear-gradient(90deg, transparent, #8b5cf6, transparent);
             animation: scanLine 2s ease-in-out infinite;
         }
 
-        @keyframes scanLine {
-            0% { top: 0; }
-            50% { top: calc(100% - 3px); }
-            100% { top: 0; }
-        }
+        @keyframes scanLine { 0% { top: 0; } 50% { top: calc(100% - 3px); } 100% { top: 0; } }
 
-        /* Corner brackets */
-        #scan-animation::after {
-            content: '';
-            position: absolute;
-            inset: -2px;
-            border: 3px solid transparent;
-            border-top-color: #00d4aa;
-            border-left-color: #00d4aa;
-            border-radius: 20px 0 0 0;
-            width: 40px;
-            height: 40px;
-        }
-
-        /* Info panel when tracked */
+        /* Info panel */
         #info-panel {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            right: 20px;
-            z-index: 1000;
-            background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(15px);
-            border-radius: 16px;
-            border: 1px solid rgba(139,92,246,0.3);
-            padding: 16px;
+            position: fixed; bottom: 20px; left: 20px; right: 20px; z-index: 1000;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(15px);
+            border-radius: 16px; border: 1px solid rgba(255,60,60,0.3);
+            padding: 16px; display: none;
+        }
+
+        #info-panel.visible { display: flex; align-items: center; gap: 14px; }
+
+        .heartbeat-icon {
+            font-size: 36px;
+            animation: heartPump 1s ease-in-out infinite;
+        }
+
+        @keyframes heartPump {
+            0%, 100% { transform: scale(1); }
+            15% { transform: scale(1.3); }
+            30% { transform: scale(1); }
+            45% { transform: scale(1.15); }
+            60% { transform: scale(1); }
+        }
+
+        #info-panel .info-text h4 {
+            color: #ff6b6b; font-family: -apple-system, sans-serif;
+            font-size: 14px; margin-bottom: 4px;
+        }
+
+        #info-panel .info-text p {
+            color: rgba(255,255,255,0.7); font-family: -apple-system, sans-serif;
+            font-size: 12px; line-height: 1.4;
+        }
+
+        /* Scale controls */
+        #scale-controls {
+            position: fixed; right: 12px; top: 50%; transform: translateY(-50%);
+            z-index: 1000; display: none; flex-direction: column; gap: 8px;
+        }
+
+        #scale-controls.visible { display: flex; }
+
+        .scale-btn {
+            width: 44px; height: 44px;
+            background: rgba(0,0,0,0.7); border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 50%; color: #fff; font-size: 22px; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; -webkit-tap-highlight-color: transparent;
+        }
+
+        .scale-btn:active { background: rgba(139,92,246,0.6); }
+
+        #scale-label {
+            color: #fff; font-family: -apple-system, sans-serif;
+            font-size: 11px; text-align: center; font-weight: 600;
+        }
+
+        /* Haptic indicator */
+        #haptic-indicator {
+            position: fixed; top: 50px; right: 12px; z-index: 1001;
+            background: rgba(255,60,60,0.2); border: 1px solid rgba(255,60,60,0.4);
+            border-radius: 20px; padding: 6px 12px;
+            color: #ff6b6b; font-family: -apple-system, sans-serif;
+            font-size: 11px; font-weight: 700;
             display: none;
         }
 
-        #info-panel.visible { display: block; }
-
-        #info-panel h4 {
-            color: #8b5cf6;
-            font-family: -apple-system, sans-serif;
-            font-size: 14px;
-            margin-bottom: 6px;
-        }
-
-        #info-panel p {
-            color: rgba(255,255,255,0.7);
-            font-family: -apple-system, sans-serif;
-            font-size: 12px;
-            line-height: 1.4;
-        }
+        #haptic-indicator.active { display: block; }
     </style>
 </head>
 <body>
-    <!-- Back Button -->
-    <a href="index.html" class="back-btn" id="backBtn">&larr;</a>
+    <a href="index.html" class="back-btn">&larr;</a>
 
-    <!-- Status Bar -->
-    <div id="status-overlay" style="padding-left:60px;">
+    <div id="status-overlay">
         <span id="status-text">Initializing camera...</span>
         <span id="status-dot"></span>
     </div>
 
-    <!-- Scanning Visual -->
     <div id="scan-animation"></div>
 
-    <!-- Scanning Instructions -->
     <div id="scan-instructions">
         <h3>Scan the Trube Medical Card</h3>
         <img src="targets/marker.jpg" alt="marker" class="marker-thumb">
-        <p>Point your camera at the elephant card to see the 3D model</p>
+        <p>Point your camera at the elephant card<br>to see the beating heart + energy model</p>
     </div>
 
-    <!-- Info Panel (shown when tracked) -->
+    <!-- Info Panel -->
     <div id="info-panel">
-        <h4>Energy & Waste Management</h4>
-        <p>Terrestrial Radiation Loss model showing how energy is radiated from Earth's surface. Animated blue arrows represent infrared radiation escaping to space.</p>
+        <div class="heartbeat-icon">&#10084;&#65039;</div>
+        <div class="info-text">
+            <h4>Beating Heart + Energy Model</h4>
+            <p>Haptic vibration synced to heartbeat. Use +/- to resize.</p>
+        </div>
     </div>
+
+    <!-- Scale Controls -->
+    <div id="scale-controls">
+        <button class="scale-btn" onclick="scaleModel(0.05)">+</button>
+        <div id="scale-label">100%</div>
+        <button class="scale-btn" onclick="scaleModel(-0.05)">-</button>
+    </div>
+
+    <!-- Haptic indicator -->
+    <div id="haptic-indicator">&#10084; HAPTIC ON</div>
 
     <!-- A-Frame AR Scene -->
     <a-scene
@@ -227,78 +212,183 @@
         device-orientation-permission-ui="enabled: false"
     >
         <a-assets>
-            <a-asset-item id="model" src="models/model.glb"></a-asset-item>
+            <a-asset-item id="energyModel" src="models/model.glb"></a-asset-item>
+            <a-asset-item id="heartAsset" src="models/beating-heart.glb"></a-asset-item>
         </a-assets>
 
         <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-        <!-- Image Target 0: Elephant Card -->
+        <!-- Image Target: Elephant Card -->
         <a-entity mindar-image-target="targetIndex: 0">
-            <!-- 3D Model - positioned on top of the card -->
-            <a-gltf-model
-                src="#model"
-                position="0 0 0.1"
-                rotation="-90 0 0"
-                scale="0.3 0.3 0.3"
-                animation-mixer="loop: repeat; timeScale: 1;"
-                class="clickable"
-            ></a-gltf-model>
 
-            <!-- Label floating above the model -->
-            <a-entity
-                position="0 0.6 0"
-                text="value: Energy & Waste Management; color: #00d4aa; align: center; width: 1.5; font: roboto;"
-                look-at="[camera]"
-            ></a-entity>
+            <!-- Container for scaling both models together -->
+            <a-entity id="model-container" position="0 0 0">
 
-            <!-- Subtitle -->
-            <a-entity
-                position="0 0.5 0"
-                text="value: Terrestrial Radiation Loss; color: white; align: center; width: 1.2; font: roboto; opacity: 0.7;"
-                look-at="[camera]"
-            ></a-entity>
+                <!-- Beating Heart - half card size, centered above card -->
+                <a-gltf-model
+                    id="heart-ar"
+                    src="#heartAsset"
+                    position="0 0 0.15"
+                    rotation="0 0 0"
+                    scale="0.15 0.15 0.15"
+                    animation-mixer="loop: repeat; timeScale: 1;"
+                ></a-gltf-model>
+
+                <!-- Energy/Radiation model - smaller, offset to the side -->
+                <a-gltf-model
+                    id="energy-ar"
+                    src="#energyModel"
+                    position="0.35 0 0.05"
+                    rotation="-90 0 0"
+                    scale="0.12 0.12 0.12"
+                    animation-mixer="loop: repeat; timeScale: 1;"
+                ></a-gltf-model>
+
+                <!-- Title label -->
+                <a-entity
+                    position="0 0 0.45"
+                    text="value: Energy & Waste Management; color: #00ffaa; align: center; width: 1.2; font: roboto;"
+                    look-at="[camera]"
+                ></a-entity>
+
+                <!-- Heart label -->
+                <a-entity
+                    position="-0.05 0 0.35"
+                    text="value: Beating Heart; color: #ff6666; align: center; width: 0.8; font: roboto;"
+                    look-at="[camera]"
+                ></a-entity>
+
+            </a-entity>
         </a-entity>
     </a-scene>
 
     <script>
+        // ========== UI References ==========
         const statusText = document.getElementById('status-text');
         const statusDot = document.getElementById('status-dot');
         const scanInstructions = document.getElementById('scan-instructions');
         const scanAnimation = document.getElementById('scan-animation');
         const infoPanel = document.getElementById('info-panel');
+        const scaleControls = document.getElementById('scale-controls');
+        const scaleLabel = document.getElementById('scale-label');
+        const hapticIndicator = document.getElementById('haptic-indicator');
 
-        // Listen for MindAR ready
+        // ========== Scale State ==========
+        let currentScale = 1.0;
+        const MIN_SCALE = 0.3;
+        const MAX_SCALE = 3.0;
+        const baseHeartScale = 0.15;
+        const baseEnergyScale = 0.12;
+
+        function scaleModel(delta) {
+            currentScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, currentScale + delta));
+            const hs = baseHeartScale * currentScale;
+            const es = baseEnergyScale * currentScale;
+
+            const heartEl = document.getElementById('heart-ar');
+            const energyEl = document.getElementById('energy-ar');
+
+            if (heartEl) heartEl.setAttribute('scale', `${hs} ${hs} ${hs}`);
+            if (energyEl) energyEl.setAttribute('scale', `${es} ${es} ${es}`);
+
+            scaleLabel.textContent = Math.round(currentScale * 100) + '%';
+        }
+
+        // ========== Pinch-to-Scale (touch) ==========
+        let lastPinchDist = 0;
+
+        document.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 2) {
+                const dx = e.touches[0].clientX - e.touches[1].clientX;
+                const dy = e.touches[0].clientY - e.touches[1].clientY;
+                lastPinchDist = Math.sqrt(dx * dx + dy * dy);
+            }
+        }, { passive: true });
+
+        document.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 2) {
+                const dx = e.touches[0].clientX - e.touches[1].clientX;
+                const dy = e.touches[0].clientY - e.touches[1].clientY;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                const delta = (dist - lastPinchDist) * 0.003;
+                scaleModel(delta);
+                lastPinchDist = dist;
+            }
+        }, { passive: true });
+
+        // ========== Haptic Heartbeat ==========
+        let hapticInterval = null;
+        let isTracking = false;
+
+        function startHapticHeartbeat() {
+            if (hapticInterval) return;
+
+            hapticIndicator.classList.add('active');
+
+            // Double-beat pattern like a real heartbeat: lub-dub
+            hapticInterval = setInterval(() => {
+                if (!isTracking) return;
+
+                // First beat (lub) - strong
+                if (navigator.vibrate) {
+                    navigator.vibrate([80, 80, 50]); // lub-pause-dub
+                }
+            }, 850); // ~70 BPM heartrate
+        }
+
+        function stopHapticHeartbeat() {
+            if (hapticInterval) {
+                clearInterval(hapticInterval);
+                hapticInterval = null;
+            }
+            if (navigator.vibrate) {
+                navigator.vibrate(0); // cancel any vibration
+            }
+            hapticIndicator.classList.remove('active');
+        }
+
+        // ========== MindAR Events ==========
         const sceneEl = document.querySelector('a-scene');
 
         sceneEl.addEventListener('arReady', () => {
-            statusText.textContent = 'Camera ready - Scan the elephant card';
-            console.log('MindAR ready');
+            statusText.textContent = 'Camera ready - Scan elephant card';
         });
 
-        sceneEl.addEventListener('arError', (e) => {
-            statusText.textContent = 'Camera error - Please allow camera access';
-            console.error('MindAR error:', e);
+        sceneEl.addEventListener('arError', () => {
+            statusText.textContent = 'Camera error - Allow camera access';
         });
 
-        // Listen for target found/lost
         const target = document.querySelector('[mindar-image-target]');
 
         target.addEventListener('targetFound', () => {
-            statusText.textContent = 'Target FOUND - Tracking active!';
+            isTracking = true;
+            statusText.textContent = 'TRACKING - Heart beating!';
             statusDot.classList.add('tracking');
             scanInstructions.classList.add('hidden');
             scanAnimation.classList.add('hidden');
             infoPanel.classList.add('visible');
-            console.log('Target found!');
+            scaleControls.classList.add('visible');
+
+            // Start haptic heartbeat
+            startHapticHeartbeat();
         });
 
         target.addEventListener('targetLost', () => {
-            statusText.textContent = 'Target lost - Point camera at the card';
+            isTracking = false;
+            statusText.textContent = 'Target lost - Scan the card again';
             statusDot.classList.remove('tracking');
             scanInstructions.classList.remove('hidden');
             scanAnimation.classList.remove('hidden');
             infoPanel.classList.remove('visible');
-            console.log('Target lost');
+            scaleControls.classList.remove('visible');
+
+            // Stop haptics
+            stopHapticHeartbeat();
+        });
+
+        // Clean up on page exit
+        window.addEventListener('beforeunload', () => {
+            stopHapticHeartbeat();
         });
     </script>
 </body>

@@ -348,9 +348,43 @@
 
         <!-- Controls -->
         <div class="controls">
-            <button class="control-btn active" onclick="toggleAnimation(true, this)">Play Animation</button>
-            <button class="control-btn" onclick="toggleAnimation(false, this)">Pause</button>
-            <button class="control-btn" onclick="resetCamera()">Reset View</button>
+            <button class="control-btn active" onclick="toggleAnimation('mainModel', true, this)">Play Animation</button>
+            <button class="control-btn" onclick="toggleAnimation('mainModel', false, this)">Pause</button>
+            <button class="control-btn" onclick="resetCamera('mainModel')">Reset View</button>
+        </div>
+
+        <!-- ===== BEATING HEART 3D VIEWER ===== -->
+        <section class="ar-container" style="margin-top:30px;">
+            <div class="ar-label" style="background:linear-gradient(135deg,#ff6b6b,#ee5a24);">Beating Heart</div>
+            <div class="loading-overlay" id="heartLoader">
+                <div class="spinner" style="border-top-color:#ff6b6b;"></div>
+                <p class="loading-text">Loading Heart Model...</p>
+            </div>
+            <model-viewer
+                id="heartModel"
+                src="models/beating-heart.glb"
+                alt="Beating Heart - 3D Animated Model"
+                ar
+                ar-modes="webxr scene-viewer quick-look"
+                camera-controls
+                touch-action="pan-y"
+                auto-rotate
+                autoplay
+                shadow-intensity="0.8"
+                environment-image="neutral"
+                exposure="1.0"
+                camera-orbit="0deg 75deg auto"
+                interaction-prompt="auto"
+                ar-scale="auto"
+                ar-placement="floor"
+            >
+            </model-viewer>
+        </section>
+
+        <div class="controls">
+            <button class="control-btn active" onclick="toggleAnimation('heartModel', true, this)">Play Heartbeat</button>
+            <button class="control-btn" onclick="toggleAnimation('heartModel', false, this)">Pause</button>
+            <button class="control-btn" onclick="resetCamera('heartModel')">Reset View</button>
         </div>
 
         <!-- ===== MARKER AR BUTTON ===== -->
@@ -466,24 +500,34 @@
     </footer>
 
     <script>
-        const modelViewer = document.getElementById('mainModel');
+        // Main model
+        const mainModel = document.getElementById('mainModel');
         const loader = document.getElementById('loader');
-
-        modelViewer.addEventListener('load', () => { loader.classList.add('hidden'); });
-        modelViewer.addEventListener('error', (e) => {
-            console.error('Model load error:', e);
+        mainModel.addEventListener('load', () => { loader.classList.add('hidden'); });
+        mainModel.addEventListener('error', () => {
             loader.innerHTML = '<p style="color:#ff6b6b;font-size:14px;text-align:center;padding:20px;">Loading model...<br>Please wait or refresh.</p>';
         });
 
-        function toggleAnimation(play, btn) {
-            play ? modelViewer.play() : modelViewer.pause();
-            document.querySelectorAll('.control-btn').forEach(b => b.classList.remove('active'));
+        // Heart model
+        const heartModel = document.getElementById('heartModel');
+        const heartLoader = document.getElementById('heartLoader');
+        heartModel.addEventListener('load', () => { heartLoader.classList.add('hidden'); });
+        heartModel.addEventListener('error', () => {
+            heartLoader.innerHTML = '<p style="color:#ff6b6b;font-size:14px;text-align:center;padding:20px;">Loading heart...<br>Please wait or refresh.</p>';
+        });
+
+        function toggleAnimation(modelId, play, btn) {
+            const mv = document.getElementById(modelId);
+            play ? mv.play() : mv.pause();
+            const controls = btn.parentElement;
+            controls.querySelectorAll('.control-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
         }
 
-        function resetCamera() {
-            modelViewer.cameraOrbit = '30deg 75deg auto';
-            modelViewer.cameraTarget = 'auto auto auto';
+        function resetCamera(modelId) {
+            const mv = document.getElementById(modelId);
+            mv.cameraOrbit = modelId === 'heartModel' ? '0deg 75deg auto' : '30deg 75deg auto';
+            mv.cameraTarget = 'auto auto auto';
         }
     </script>
 </body>
